@@ -5,7 +5,7 @@ AF_DCMotor motor4(4);
 AF_DCMotor motor2(2);
 AF_DCMotor motor1(1);
 
-int v = 128;
+int v = 200; //velocity (0 - 255)
 
 void setup() {
   Serial.begin(9600);
@@ -13,10 +13,12 @@ void setup() {
 
 void loop() {
   if (Serial.available() > 0) {
-    char command = Serial.readStringUntil('\n')[0];
-    Serial.println(command);
+    String command = Serial.readStringUntil('\n');
+    Serial.println("ok");
 
-    switch (command) {
+    switch (command[0]) { //switch only works with char or int
+      case 'v': //velocity (format vXXX)
+        v = command.substring(1, 4).toInt();
       case 'f': //forward
         rightForward(v);
         leftForward(v);
@@ -26,12 +28,12 @@ void loop() {
         leftStop();
         break;
       case 'r': //right
-        rightStop();
-        leftForward(v);
+        rightBack(v);
+        leftStop();
         break;
       case 'l': //left
-        rightForward(v);
-        leftStop();
+        rightStop();
+        leftBack(v);
         break;
       default:
         break;
