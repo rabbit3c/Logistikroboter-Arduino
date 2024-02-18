@@ -5,7 +5,7 @@ AF_DCMotor motor4(4);
 AF_DCMotor motor2(2);
 AF_DCMotor motor1(1);
 
-int v = 200; //velocity (0 - 255)
+int v = 0; //velocity (0 - 255)
 
 void setup() {
   Serial.begin(9600);
@@ -28,12 +28,22 @@ void loop() {
         leftStop();
         break;
       case 'r': //right
-        rightBack(v);
+        rightBack(v + 100);
         leftStop();
         break;
       case 'l': //left
         rightStop();
-        leftBack(v);
+        leftBack(v + 100);
+        break;
+      case 't': //turn right or turn left
+        if (command == "turn_right") {
+          leftForward(255);
+          rightBack(100);
+        }
+        else if (command == "turn_left") {
+          rightForward(255);
+          leftBack(100);
+        }
         break;
       default:
         break;
