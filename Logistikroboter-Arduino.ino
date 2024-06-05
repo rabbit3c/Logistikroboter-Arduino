@@ -46,7 +46,7 @@ void loop() {
         if (command == "turn_right") {
             leftForward(255);
             delay(40);
-            rightBack(140);
+            rightBack(150);
         }
         else if (command == "turn_left") {
             rightForward(255);
