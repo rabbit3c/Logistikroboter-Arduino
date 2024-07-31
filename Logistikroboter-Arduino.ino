@@ -4,22 +4,41 @@
 AF_DCMotor motor3(3);
 AF_DCMotor motor1(1);
 
+#define Trigger 20
+#define Echo 21
+
 Servo servo;
 
 int v = 100; //velocity (0 - 255)
+String command;
+
+long timeUltrasonic;
+long distance;
+bool obstructed = false;
 
 void setup() {
   Serial.begin(9600);
+  
   servo.attach(10);
   servo.write(93);
+
+  pinMode(Trigger, OUTPUT);
+  pinMode(Echo, INPUT);
 }
 
 void loop() {
+  checkDistance();
+  
   if (Serial.available() > 0) {
-    String command = Serial.readStringUntil('\n');
+    command = Serial.readStringUntil('\n');
     Serial.println("ok");
 
-    switch (command[0]) { //switch only works with char or int
+    executeCommand();
+  }
+}
+
+void executeCommand() {
+  switch (command[0]) { //switch only works with char or int
       case 'v': //velocity (format vXXX)
         v = command.substring(1, 4).toInt();
         break;
@@ -59,25 +78,28 @@ void loop() {
       default:
         break;
     }
-  }
-}
+}                         
 
 void rightForward(int v) {
+  if (obstructed) return;
   motor1.run(BACKWARD);
   motor1.setSpeed(v);
 }
 
 void leftForward(int v) {
+  if (obstructed) return;
   motor3.run(BACKWARD);
   motor3.setSpeed(v);
 }
 
 void rightBack(int v) {
+  if (obstructed) return;
   motor1.run(FORWARD);
   motor1.setSpeed(v);
 }
 
 void leftBack(int v) {
+  if (obstructed) return;
   motor3.run(FORWARD);
   motor3.setSpeed(v);
 }
@@ -111,4 +133,25 @@ void unload(char dir) {
   }
   delay(200);
   servo.write(93);
+}
+
+void checkDistance() {
+  digitalWrite(Trigger, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(Trigger, LOW);
+  timeUltrasonic = pulseIn(Echo, HIGH);
+  distance = timeUltrasonic / 58.2;
+  
+  //for some reason the sensor reports sometimes 1199 when an object is close by
+  if (distance > 8 && distance < 1190) { 
+    if (obstructed) {
+      obstructed = false;
+      executeCommand();
+    }
+  }
+  else {
+    obstructed = true;
+    rightStop();
+    leftStop();
+  }
 }
