@@ -143,15 +143,14 @@ void checkDistance() {
   distance = timeUltrasonic / 58.2;
   
   //for some reason the sensor reports sometimes 1199 when an object is close by
-  if (distance > 8 && distance < 1190) { 
-    if (obstructed) {
-      obstructed = false;
-      executeCommand();
-    }
-  }
-  else {
+  if (distance < 8 || distance == 1199) { 
     obstructed = true;
     rightStop();
     leftStop();
+    return;
+  }
+  if (obstructed) {
+    obstructed = false;
+    executeCommand();
   }
 }
